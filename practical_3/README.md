@@ -67,3 +67,9 @@ Heap after deletion: [10, 5, 3, 4, 1]
 
 Execution Time: 0.00012345 seconds
 ```
+
+## Summary
+This practical implements a Max Heap data structure in Python, showcasing fundamental operations such as heapifying, building a max heap from an unsorted array, inserting new elements, and deleting the maximum element. The script also measures the execution time of these operations to illustrate their efficiency.
+
+## Conclusion
+The Max Heap provides an efficient way to repeatedly extract the maximum element from a dynamic dataset, achieving $O(\log n)$ time complexity for insertions and deletions. Building the heap structure is optimized to $O(n)$ time, making the heap a highly effective data structure for implementing priority queues and sorting algorithms like Heap Sort.

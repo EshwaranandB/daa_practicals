@@ -55,3 +55,9 @@ Enter the target number to search: 9
 Target 9 found at index: 4 (in sorted array)
 Execution Time: 0.002800 ms
 ```
+
+## Summary
+This practical demonstrates the implementation and comparison of Linear and Binary Search algorithms. Linear Search checks elements sequentially, making it suitable for unsorted data, while Binary Search efficiently halves the search space but requires the data to be sorted first.
+
+## Conclusion
+Binary Search is significantly faster than Linear Search for large datasets due to its logarithmic time complexity ($O(\log n)$) compared to Linear Search's linear time complexity ($O(n)$). However, the overhead of sorting the data before applying Binary Search must be considered if the dataset is small or only searched once.
