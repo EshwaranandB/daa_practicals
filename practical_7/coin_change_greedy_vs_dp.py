@@ -5,123 +5,124 @@ INF = 9999
 
 def greedy_change(coins, amount):
     """
-    Greedy Method: Picks the largest denomination available first.
-    Note: May not always produce the optimal (minimum) number of coins.
-    Time Complexity: O(n log n) for sorting + O(amount)
+    Greedy approach for Making Change.
+    Sorts coins in descending order and greedily picks the largest available coin.
+    Time Complexity: O(n log n)
     Space Complexity: O(1)
     """
     sorted_coins = sorted(coins, reverse=True)
     count = 0
-    coins_used = []
-    rem_amount = amount
+    rem = amount
+    used_coins = []
 
     for coin in sorted_coins:
-        while rem_amount >= coin:
-            coins_used.append(coin)
-            rem_amount -= coin
+        while rem >= coin:
+            used_coins.append(coin)
+            rem -= coin
             count += 1
 
-    return count, coins_used
+    return count, used_coins
 
 
 def dp_change(coins, amount):
     """
-    Dynamic Programming Method: Bottom-Up Table Construction.
-    Always produces the optimal (minimum) number of coins.
+    Dynamic Programming approach for Making Change.
+    Builds a 2D table dp[i][j] representing minimum coins needed to make amount j using first i coins.
     Time Complexity: O(n * amount)
     Space Complexity: O(n * amount)
     """
     n = len(coins)
-
-    # dp[i][j] = minimum coins needed to make amount j using first i coin types
     dp = [[0] * (amount + 1) for _ in range(n + 1)]
 
-    # Base Cases
-    for i in range(n + 1):
-        dp[i][0] = 0  # Amount 0 requires 0 coins
+    # Base cases initialization
     for j in range(1, amount + 1):
-        dp[0][j] = INF  # 0 coins available cannot form amount > 0
+        dp[0][j] = INF  # Amount j cannot be formed with 0 coins
 
-    # Build DP Table
     for i in range(1, n + 1):
         for j in range(1, amount + 1):
             dp[i][j] = dp[i - 1][j]  # Exclude current coin
             if coins[i - 1] <= j:
                 dp[i][j] = min(dp[i][j], dp[i][j - coins[i - 1]] + 1)  # Include current coin
 
-    # Print DP Table
-    print("\n========== DP TABLE (Min coins for each amount) ==========")
-    header = f"{'Coin\\Amt':<10}" + "".join(f"{j:>5}" for j in range(amount + 1))
+    # Backtrack to find coins used in DP solution
+    used_coins = []
+    curr_amount = amount
+    curr_coin = n
+    while curr_amount > 0 and curr_coin > 0:
+        if dp[curr_coin][curr_amount] != dp[curr_coin - 1][curr_amount]:
+            used_coins.append(coins[curr_coin - 1])
+            curr_amount -= coins[curr_coin - 1]
+        else:
+            curr_coin -= 1
+
+    return dp[n][amount], dp, used_coins
+
+
+def print_dp_table(coins, amount, dp):
+    """Prints the DP table formatted with aligned columns."""
+    print("\n========== DP TABLE (min coins for each amount) ==========")
+    header = f"{'Coin\\Amt':<10}" + "".join([f"{j:>5}" for j in range(amount + 1)])
     print(header)
     print("-" * len(header))
 
-    for i in range(1, n + 1):
-        row_str = f"{coins[i - 1]:<10}"
+    for i in range(1, len(coins) + 1):
+        row = f"{coins[i - 1]:<10}"
         for j in range(amount + 1):
             val = "-" if dp[i][j] >= INF else str(dp[i][j])
-            row_str += f"{val:>5}"
-        print(row_str)
+            row += f"{val:>5}"
+        print(row)
     print("-" * len(header))
-
-    return dp[n][amount]
 
 
 def main():
-    # Standard coin denominations from reference
     coins = [1, 5, 6, 9]
-    print("Coins available: 1, 5, 6, 9")
-
+    print(f"Coins available: {coins}")
+    
     try:
-        raw_input = input("Enter target amount (or press Enter to customize coins): ").strip()
-        if raw_input:
-            amount = int(raw_input)
-        else:
-            coins_input = input("Enter coin denominations separated by space: ")
-            coins = [int(c) for c in coins_input.split()]
-            amount = int(input("Enter target amount: "))
-
+        amount = int(input("Enter amount: "))
         if amount < 0:
             print("Amount cannot be negative.")
             return
     except ValueError:
-        print("Invalid input! Please enter valid integers.")
+        print("Invalid input! Please enter a valid integer.")
         return
 
     # Greedy Execution
     start_greedy = time.perf_counter()
-    greedy_result, greedy_coins_used = greedy_change(coins, amount)
+    greedy_res, greedy_coins = greedy_change(coins, amount)
     end_greedy = time.perf_counter()
     greedy_time_ns = (end_greedy - start_greedy) * 1e9
 
     # DP Execution
     start_dp = time.perf_counter()
-    dp_result = dp_change(coins, amount)
+    dp_res, dp_table, dp_coins = dp_change(coins, amount)
     end_dp = time.perf_counter()
     dp_time_ns = (end_dp - start_dp) * 1e9
 
-    # Output Results
-    print("\n" + "=" * 45)
-    print("                 RESULTS")
-    print("=" * 45)
-    print(f"Amount              : {amount}")
-    print(f"Greedy Coins Used   : {greedy_coins_used}")
-    print(f"Greedy Result       : {greedy_result} coins")
-    print(f"Greedy Time         : {greedy_time_ns:.2f} ns")
-    print("-" * 45)
-    print(f"DP Result           : {dp_result} coins")
-    print(f"DP Time             : {dp_time_ns:.2f} ns")
-    print("-" * 45)
+    # Output DP Table
+    print_dp_table(coins, amount, dp_table)
 
-    # Comparison Summary
-    print("\n" + "=" * 45)
-    print("               COMPARISON")
-    print("=" * 45)
+    # Detailed Results
+    print("\nGreedy Coins Used :", " ".join(map(str, greedy_coins)))
+    print("DP Coins Used     :", " ".join(map(str, dp_coins)))
+
+    print("\n========== RESULTS ==========")
+    print(f"Amount              : {amount}")
+    print(f"Greedy Result       : {greedy_res} coins")
+    print(f"Greedy Time         : {greedy_time_ns:.2f} ns")
+    print("-" * 31)
+    print(f"DP Result           : {dp_res} coins")
+    print(f"DP Time             : {dp_time_ns:.2f} ns")
+    print("-" * 31)
+
+    # Method Comparison Table
+    print("\n========== COMPARISON ==========")
     print(f"{'Method':<12} | {'Coins':<10} | {'Optimal?':<10}")
-    print("-" * 45)
-    is_greedy_optimal = "Yes" if greedy_result == dp_result else "No"
-    print(f"{'Greedy':<12} | {greedy_result:<10} | {is_greedy_optimal:<10}")
-    print(f"{'DP':<12} | {dp_result:<10} | {'Yes':<10}")
-    print("=" * 45)
+    print("-" * 38)
+    is_greedy_optimal = "Yes" if greedy_res == dp_res else "No"
+    print(f"{'Greedy':<12} | {greedy_res:<10} | {is_greedy_optimal:<10}")
+    print(f"{'DP':<12} | {dp_res:<10} | {'Yes':<10}")
+    print("=" * 38)
 
 
 if __name__ == "__main__":
